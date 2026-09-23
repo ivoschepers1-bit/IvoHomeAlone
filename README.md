@@ -23,6 +23,7 @@ Dubbelklikken op `index.html` werkt niet: browsers laden 3D-modules niet vanaf `
 
 Na **Spelen** volgt eerst een 3D-filmintro (overslaan met Enter of een klik):
 
+1. De filmtitel, net als in de film: op een zwart scherm staat een rood neonhuisje op een blauwe lijn. "HOME" schuift van links binnen en "ALONe" van rechts, en dan gaat het raampje geel aan. Alles is gebouwd als een mozaïek van stenen met de noppen naar je toe
 1. De openingsshot: de camera vliegt 's nachts door de besneeuwde straat naar het verlichte huis van de McCallisters, en de titel verschijnt
 2. De ruzie om de kaaspizza: *"Ik hoop dat ik jullie NOOIT meer zie!"*
 3. Een storm, de stroom valt uit en de wekkers gaan niet af

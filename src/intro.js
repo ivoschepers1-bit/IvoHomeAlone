@@ -73,11 +73,82 @@ function cloud(x, y, z, s = 1) {
 }
 
 // ---------------------------------------------------------------------
+// De filmtitel: "HOME [huisje] ALONe" als bouwstenen-mozaïek met neon-gloed.
+const GLYPHS = {
+  H: ['XX.XX', '.X.X.', '.X.X.', '.X.X.', '.XXX.', '.X.X.', '.X.X.', '.X.X.', 'XX.XX'],
+  O: ['.XXX.', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', 'X...X', '.XXX.'],
+  M: ['XX...XX', '.XX.XX.', '.X.X.X.', '.X.X.X.', '.X...X.', '.X...X.', '.X...X.', '.X...X.', 'XX...XX'],
+  E: ['XXXX', '.X.X', '.X..', '.X..', '.XXX', '.X..', '.X..', '.X.X', 'XXXX'],
+  A: ['..X..', '..X..', '.X.X.', '.X.X.', '.X.X.', 'X...X', 'XXXXX', 'X...X', 'X...X'],
+  L: ['XX..', '.X..', '.X..', '.X..', '.X..', '.X..', '.X..', '.X.X', 'XXXX'],
+  N: ['XX..X', '.X..X', '.XX.X', '.XX.X', '.X.XX', '.X.XX', '.X..X', '.X..X', 'XX..X'],
+  e: ['....', '....', '....', '....', '.XX.', 'X..X', 'XXXX', 'X...', '.XXX'],
+};
+const HOUSE = [
+  '...X.........',
+  '..XXX.X......',
+  '.XXXXXXX.....',
+  'XXXXXXXXX...X',
+  '.XXXXXXXXXXXXX',
+  '.XXXXXXXXXXXX.',
+  '.XXXWXXXXXXXX.',
+  '.XXXXXXXXXXXX.',
+  '.XXXXXXXXXXXX.',
+];
+
+function mosaic(cells, color, emissiveIntensity = 0.85, base = 0x000000) {
+  // cellen: [{x,y}] – elke cel een 1x1-steen met de nop naar de camera
+  const m = new THREE.MeshStandardMaterial({ color: base, emissive: color, emissiveIntensity, roughness: 0.3, metalness: 0.1, toneMapped: false });
+  const box = new THREE.InstancedMesh(GEO.box, m, cells.length);
+  const sg = GEO.stud.clone(); sg.rotateX(Math.PI / 2); sg.translate(0, 0, 0.58);
+  const stud = new THREE.InstancedMesh(sg, m, cells.length);
+  const mx = new THREE.Matrix4(), s = new THREE.Vector3(0.94, 0.94, 0.9), q = new THREE.Quaternion(), p = new THREE.Vector3();
+  cells.forEach((c, i) => { p.set(c.x, c.y, 0); mx.compose(p, q, s); box.setMatrixAt(i, mx); mx.makeTranslation(c.x, c.y, 0); stud.setMatrixAt(i, mx); });
+  const g = new THREE.Group(); g.add(box, stud);
+  return g;
+}
+
+function wordCells(word, x0) {
+  const cells = []; let x = x0;
+  for (const ch of word) {
+    const rows = GLYPHS[ch];
+    rows.forEach((r, ry) => { for (let cx = 0; cx < r.length; cx++) if (r[cx] === 'X') cells.push({ x: x + cx, y: 8 - ry + 0.5 }); });
+    x += rows[0].length + 1;
+  }
+  return { cells, width: x - x0 - 1 };
+}
+
+function buildTitle() {
+  const g = new THREE.Group();
+  const BLUE = 0x1f6bff;
+  const home = wordCells('HOME', 0), alone = wordCells('ALONe', 0);
+  const homeG = mosaic(home.cells, BLUE, 0.85, 0x2050c0); homeG.position.x = -8 - home.width + 0.5;
+  const aloneG = mosaic(alone.cells, BLUE, 0.85, 0x2050c0); aloneG.position.x = 8 + 0.5;
+  const hc = [], win = [];
+  HOUSE.forEach((r, ry) => { for (let cx = 0; cx < r.length; cx++) { if (r[cx] === 'X') hc.push({ x: cx - 6, y: 8 - ry + 0.5 }); if (r[cx] === 'W') win.push({ x: cx - 6, y: 8 - ry + 0.5 }); } });
+  const house = mosaic(hc, 0xe00800, 0.9, 0x801000);
+  const winMat = new THREE.MeshStandardMaterial({ color: 0x220a05, emissive: 0x000000, roughness: 0.4, toneMapped: false });
+  const w = new THREE.Mesh(GEO.box, winMat); w.scale.set(0.94, 0.94, 0.9); w.position.set(win[0].x, win[0].y, 0); house.add(w);
+  const lc = []; for (let x = -34; x <= 34; x++) lc.push({ x: x + 0.5, y: -0.25 });
+  const line = mosaic(lc, BLUE, 1.1, 0x2050c0); line.scale.y = 0.45;
+  g.add(homeG, aloneG, house, line);
+  // zachte gloed achter de letters
+  const glowTex = (() => {
+    const cv = document.createElement('canvas'); cv.width = 256; cv.height = 256; const c = cv.getContext('2d');
+    const gr = c.createRadialGradient(128, 128, 0, 128, 128, 127); gr.addColorStop(0, 'rgba(20,70,255,.35)'); gr.addColorStop(0.6, 'rgba(20,70,255,.1)'); gr.addColorStop(1, 'rgba(20,70,255,0)');
+    c.fillStyle = gr; c.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(cv);
+  })();
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(110, 34), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  glow.position.set(0, 4.5, -1.5); g.add(glow);
+  return { g, homeG, aloneG, winMat, homeX: homeG.position.x, aloneX: aloneG.position.x, glow };
+}
+
+// ---------------------------------------------------------------------
 export class Intro {
   constructor(world, scene, camera) {
     this.W = world; this.scene = scene; this.camera = camera;
     this.root = new THREE.Group(); scene.add(this.root);
-    this.active = false;
+    this.active = false; this.actors = {};
   }
 
   fig(look, x, y, z, yaw = 0) {
@@ -104,6 +175,7 @@ export class Intro {
 
   cleanup() {
     this.root.clear();
+    this.scene.fog.near = 90; this.scene.fog.far = 220;
     if (this.game) { this.game.fx = this.game.fx.filter(f => f.mesh.parent && f.mesh.parent !== this.root); }
     this.actors = {};
     this.say(null); this.big(null); this.title(null);
@@ -161,12 +233,40 @@ export class Intro {
 // ---------------------------------------------------------------------
 const SCENES = [
   {
+    // 0. De filmtitel: HOME [huisje] ALONe op de blauwe neonlijn
+    dur: 7.5,
+    setup() {
+      this.W.setNight(true, true);
+      this.scene.background.set(0x000000); this.scene.fog.near = 1e5; this.scene.fog.far = 1e5 + 1;
+      this.W.stars.visible = false; this.W.moon.visible = false; this.W.snow.visible = false;
+      const T = this.actors.title = buildTitle();
+      T.g.position.set(0, 1000, 0); this.root.add(T.g);
+      T.winLight = new THREE.PointLight(0xffd060, 0, 8, 2); T.winLight.position.set(-2, 1006, 2); this.root.add(T.winLight);
+    },
+    update(t) {
+      const T = this.actors.title;
+      const ease = (u) => { u = clamp01(u); return 1 - Math.pow(1 - u, 3) + Math.sin(u * Math.PI) * 0.04; };
+      T.homeG.position.x = T.homeX - (1 - ease((t - 0.4) / 0.9)) * 90;
+      T.aloneG.position.x = T.aloneX + (1 - ease((t - 1.5) / 0.9)) * 90;
+      const lit = t > 3.2;
+      T.winMat.color.set(lit ? 0xffe36a : 0x220a05); T.winMat.emissive.set(lit ? 0xffc830 : 0x000000); T.winMat.emissiveIntensity = lit ? 1.6 : 0;
+      T.winLight.intensity = lit ? 6 : 0;
+      T.glow.material.opacity = 0.85 + Math.sin(t * 9) * 0.08;
+      this.camera.position.set(0, 1004.5, 80 - t * 1.2); this.camera.lookAt(0, 1004.2, 0);
+      this.title(t > 4 ? 'subonly sub' : null);
+      this.once('w1', 0.4, () => Sfx.whoosh());
+      this.once('w2', 1.5, () => Sfx.whoosh());
+      this.once('klik', 3.2, () => { Sfx.click(); Sfx.tone(880, 0.3, 'sine', 0.12); });
+    },
+  },
+  {
     // 1. De openingsshot: door de besneeuwde straat naar het huis
     dur: 13,
+    lines: [[1.2, 'Verteller', 'Winnetka, Illinois. De avond voor de kerstvakantie…'], [6.5, '', '']],
     setup() {
       this.W.setNight(true, true);
       this.groups({ front: 1, roof: 1, upper: 1, back: 1 });
-      this.W.snow.material.size = 0.45;
+      this.W.snow.material.size = 0.45; this.W.snow.visible = true;
     },
     update(t) {
       camPath(this.camera, [
@@ -176,7 +276,6 @@ const SCENES = [
         [13, [0, 16, 46], [0, 14, 20]],
       ], t);
       this.W.sun.position.set(-40, 80, 50); this.W.sun.target.position.set(0, 0, 0);
-      this.title(t > 3.5 && t < 12.3 ? (t > 6.5 ? 'show sub' : 'show') : null);
     },
   },
   {

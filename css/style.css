@@ -201,3 +201,21 @@ kbd {
   #subtitle { font-size: 16px; }
   #radio { transform: scale(.7); transform-origin: bottom right; }
 }
+
+/* Neon-logo zoals de filmtitel: HOME [huisje] ALONe op een blauwe lijn */
+.neon-logo { display: flex; flex-direction: column; align-items: center; }
+.neon-logo .words { display: flex; align-items: flex-end; gap: 6px; }
+.neon-logo .w {
+  display: inline-block; font-family: "Playfair Display", Georgia, serif; font-weight: 900; font-size: 96px; line-height: .8;
+  color: #3b8cff; transform: scaleX(.62); margin: 0 -60px; letter-spacing: 2px;
+  text-shadow: 0 0 4px #2a7bff, 0 0 14px #1f6bff, 0 0 34px #0040ff;
+}
+.neon-logo .house { width: 82px; height: 53px; filter: drop-shadow(0 0 6px #ff2a10) drop-shadow(0 0 18px #ff1000); }
+.neon-logo .house rect { fill: #ff1a0a; }
+.neon-logo .house rect.win { fill: #ffe36a; animation: winblink 4s infinite; }
+@keyframes winblink { 0%, 30% { fill: #3a0a05; } 34%, 100% { fill: #ffe36a; } }
+.neon-logo .nline { width: min(92vw, 520px); height: 4px; margin-top: 6px; background: #3b8cff; border-radius: 2px; box-shadow: 0 0 8px #2a7bff, 0 0 22px #0040ff; }
+.neon-logo .sub { margin-top: 18px; }
+#titleCard.subonly { top: 64%; }
+#titleCard.subonly .t-small, #titleCard.subonly .t-main { display: none; }
+@media (max-width: 800px) { .neon-logo .w { font-size: 60px; margin: 0 -32px; } .neon-logo .house { width: 52px; height: 34px; } }

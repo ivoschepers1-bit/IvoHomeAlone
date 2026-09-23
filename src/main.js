@@ -204,6 +204,11 @@ function frame() {
   requestAnimationFrame(frame);
 }
 
+// Het neonhuisje in het logo, dezelfde vorm als in de filmtitel
+(() => {
+  const rows = ['...X..........', '..XXX.X.......', '.XXXXXXX......', 'XXXXXXXXX...X.', '.XXXXXXXXXXXXX', '.XXXXXXXXXXXX.', '.XXXWXXXXXXXX.', '.XXXXXXXXXXXX.', '.XXXXXXXXXXXX.'];
+  $('logoHouse').innerHTML = rows.map((r, y) => [...r].map((c, x) => c === 'X' ? `<rect x="${x}" y="${y}" width="1.02" height="1.02"/>` : c === 'W' ? `<rect class="win" x="${x}" y="${y}" width="1" height="1"/>` : '').join('')).join('');
+})();
 setupUI();
 setupTouch();
 showScreen('menu');
