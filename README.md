@@ -1,14 +1,14 @@
 # Home Alone – Steen voor Steen
 
-Een fan-game in bouwsteen-stijl, gebaseerd op de eerste *Home Alone* (1990).
+Een **3D** fan-game in de stijl van de LEGO-games (denk aan LEGO Jurassic World), gebaseerd op de eerste *Home Alone* (1990).
 Kevin is alleen thuis. Om 21:00 uur breken de **Natte Bandieten** Harry en Marv in.
-Bouw vallen, verzamel noppen en verdedig het huis.
+Bouw vallen van stuiterende stapels stenen, verzamel ronddraaiende noppen en verdedig het huis.
 
-Er is geen build-stap: gewoon HTML5-canvas en JavaScript.
+Het draait volledig in de browser met WebGL ([Three.js](https://threejs.org), meegeleverd in `lib/`). Er is geen build-stap.
 
 ## Spelen
 
-YouTube-video's spelen niet vanaf een `file://`-pad, dus start een kleine webserver:
+Start een kleine webserver in deze map:
 
 ```bash
 python3 -m http.server 8000
@@ -17,13 +17,13 @@ python3 -m http.server 8000
 
 Of zet **GitHub Pages** aan (Settings → Pages → *Deploy from a branch*), dan staat het spel online.
 
-Zonder webserver kun je `index.html` ook direct openen. Dan speelt de ingebouwde muziek.
+Dubbelklikken op `index.html` werkt niet: browsers laden 3D-modules niet vanaf `file://`. Gebruik dus altijd een webserver of GitHub Pages.
 
 ## De filmintro
 
-Na **Spelen** volgt eerst een filmintro in bouwsteen-stijl (overslaan met Enter of een klik):
+Na **Spelen** volgt eerst een 3D-filmintro (overslaan met Enter of een klik):
 
-1. Het huis van de McCallisters in de sneeuw, met de titel
+1. De openingsshot: de camera vliegt 's nachts door de besneeuwde straat naar het verlichte huis van de McCallisters, en de titel verschijnt
 2. De ruzie om de kaaspizza: *"Ik hoop dat ik jullie NOOIT meer zie!"*
 3. Een storm, de stroom valt uit en de wekkers gaan niet af
 4. *"WE HEBBEN ONS VERSLAPEN!"*, de busjes rijden weg zonder Kevin
@@ -31,7 +31,7 @@ Na **Spelen** volgt eerst een filmintro in bouwsteen-stijl (overslaan met Enter 
 6. Kevin alleen thuis: springen op het bed en de aftershave-gil
 7. Het busje van "Oh-Kay Loodgieters" met Harry en Marv
 
-Daarna vliegt de voorgevel van het huis steen voor steen weg en kijk je naar binnen.
+Daarna begint het spel. De camera volgt Kevin schuin van boven. Muren, dak en de bovenverdieping worden doorzichtig zodra je naar binnen gaat, zoals in de LEGO-games.
 
 ## Zo werkt het
 
@@ -59,14 +59,13 @@ zwaaiende verfblikken · spijker (tegen het plafond gelanceerd) · lijm & veren 
 - **Met de slee** de grote trap met de rode loper af en de voordeur uit, de sneeuw in. Bandieten die in de weg staan, gaan onderuit.
 - Een kartonnen basketballer op het speelgoedtreintje, de enge verwarmingsketel in de kelder,
   een doos pizza van *Lil' Nero's*, een boomhut met kabelbaan en de politie aan het eind.
-- De status **Echte Kevin** (16.000 noppen) en 4 gouden stenen om te verdienen.
+- De status **Echte Kevin** (20.000 noppen) en 4 gouden stenen om te verdienen.
 
 ### Besturing
 
 | Toets | Actie |
 |---|---|
-| ← → / A D | Lopen |
-| ↑ ↓ / W S | Trap op/af |
+| W A S D / pijltjes | Lopen (ook de grote trap op en af) |
 | Spatie | Springen (ook over bandieten heen) |
 | E (vasthouden) | Val bouwen / voorwerp gebruiken |
 | F | Kapotmeppen / BB-geweer |
@@ -74,7 +73,7 @@ zwaaiende verfblikken · spijker (tegen het plafond gelanceerd) · lijm & veren 
 | Enter | Voorbereiding overslaan |
 | P / Esc, M | Pauze, geluid aan/uit |
 
-Op een tablet of telefoon verschijnen knoppen op het scherm.
+Op een tablet of telefoon verschijnen een joystick en knoppen op het scherm.
 
 ## Muziek
 
@@ -92,11 +91,14 @@ dan schakelt het spel automatisch over op eigen chiptune-versies van rechtenvrij
 
 ## Bestanden
 
-- `index.html`: schermen, menu's en de YouTube-radio
-- `css/style.css`: bouwsteen-look van de menu's
-- `js/draw.js`: tekenfuncties voor stenen, noppen en minifiguren (Kevin, Harry, Marv, politie)
+- `index.html`: schermen, HUD, intro-overlays en de YouTube-radio
+- `css/style.css`: bouwsteen-look van menu's en HUD
+- `src/lego.js`: stenen met noppen (instanced), texturen en minifiguren met gezichtsuitdrukkingen
+- `src/world.js`: het huis, de tuinen, de straat, licht, sneeuw en de botsings- en kamerindeling
+- `src/game.js`: Kevin, de AI van de bandieten, vallen, noppen, camera met doorkijk en HUD
+- `src/intro.js`: de filmintro met camerapaden
+- `src/main.js`: opstarten, invoer, menu's en de spellus
 - `js/audio.js`: geluidseffecten (Web Audio), ingebouwde muziek en de YouTube-speler
-- `js/intro.js`: de filmintro en de bouwsteengevel van het huis
-- `js/game.js`: wereld, vallen, AI van de bandieten, HUD en de spellus
+- `lib/three.module.min.js`: Three.js r170 (MIT-licentie, zie `lib/three.LICENSE`)
 
 *Onofficiële fan-game voor privégebruik. Niet verbonden aan de LEGO Group of 20th Century Studios.*

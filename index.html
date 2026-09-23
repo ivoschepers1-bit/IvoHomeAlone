@@ -4,15 +4,45 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
   <title>Home Alone – Steen voor Steen</title>
-  <meta name="description" content="Een fan-game in bouwsteen-stijl gebaseerd op Home Alone (1990): bouw vallen, verzamel noppen en verdedig het huis tegen de Natte Bandieten.">
+  <meta name="description" content="Een 3D fan-game in bouwsteen-stijl gebaseerd op Home Alone (1990): bouw vallen, verzamel noppen en verdedig het huis tegen de Natte Bandieten.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Nunito:wght@600;800&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">{ "imports": { "three": "./lib/three.module.min.js" } }</script>
 </head>
 <body>
   <div id="wrap">
-    <canvas id="game" width="1280" height="720"></canvas>
+    <canvas id="game"></canvas>
+    <div id="popups"></div>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div id="hudStuds" class="hud-box">
+        <div class="studline"><i class="stud-icon"></i><span id="studCount">0</span></div>
+        <div class="tk"><div id="tkFill"></div><span>ECHTE KEVIN</span></div>
+      </div>
+      <div id="hudCenter" class="hud-box"></div>
+      <div id="hudRight" class="hud-box"></div>
+      <canvas id="minimap" width="200" height="150"></canvas>
+      <div id="prompt" class="hidden"></div>
+      <div id="banner" class="hidden"><b></b><small></small></div>
+    </div>
+
+    <!-- Filmintro -->
+    <div id="cine" class="hidden">
+      <div class="bar top"><span id="cineScene"></span><button id="btnSkipIntro">Overslaan ▶▶ <small>(Enter)</small></button></div>
+      <div class="bar bottom"></div>
+      <div id="cineFade"></div>
+      <div id="titleCard" class="hidden">
+        <div class="t-small">Een bouwsteen-klassieker</div>
+        <div class="t-main">HOME ALONE</div>
+        <div class="t-sub">Steen voor Steen</div>
+      </div>
+      <div id="cineBig" class="hidden"></div>
+      <div id="clockCard" class="hidden">--:--</div>
+      <div id="subtitle" class="hidden"></div>
+    </div>
 
     <!-- Hoofdmenu -->
     <section id="menu" class="screen">
@@ -32,16 +62,16 @@
       </div>
     </section>
 
-    <!-- Verhaal -->
+    <!-- Missie -->
     <section id="intro" class="screen hidden">
       <div class="panel">
         <h2>Winnetka, Illinois – kerstavond</h2>
         <p>Kevin McCallister (8) heeft het huis helemaal voor zichzelf. Maar de <b>Natte Bandieten</b>
           – <b>Harry</b> en <b>Marv</b> – hebben het op dit huis gemunt. Om <b>21:00 uur</b> breken ze in.</p>
-        <p>Je hebt tot die tijd om overal in huis <b>vallen te bouwen</b> uit stuiterende stenen:
+        <p>Je hebt tot die tijd om in het hele huis <b>vallen te bouwen</b> van stuiterende stapels stenen:
           ijzige stoepen, verfblikken, een strijkijzer, speelgoedautootjes, kerstballen, een tarantula…</p>
-        <p>Elke bandiet heeft <b>6 hartjes trots</b>. Laat ze in je vallen lopen tot ze uit elkaar vallen –
-          vallen die zijn afgegaan, kun je daarna opnieuw bouwen. Word je gepakt? Dan val je in stukjes en verlies je wat noppen.</p>
+        <p>Elke bandiet heeft <b>6 hartjes trots</b>. Laat ze in je vallen lopen tot ze in stukjes uit elkaar vallen.
+          Een val die is afgegaan, kun je opnieuw bouwen. Word je gepakt, dan val je zelf uit elkaar en verlies je wat noppen.</p>
         <div class="buttons"><button id="btnStart" class="brick red">Aan de slag! <small>(Enter)</small></button></div>
       </div>
     </section>
@@ -51,22 +81,20 @@
       <div class="panel">
         <h2>Besturing</h2>
         <table class="keys">
-          <tr><td><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd></td><td>Lopen</td></tr>
-          <tr><td><kbd>↑</kbd><kbd>↓</kbd> / <kbd>W</kbd><kbd>S</kbd></td><td>Trap op / af</td></tr>
+          <tr><td><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / pijltjes</td><td>Lopen (ook de trap op en af)</td></tr>
           <tr><td><kbd>Spatie</kbd></td><td>Springen (ook over bandieten heen!)</td></tr>
           <tr><td><kbd>E</kbd> ingedrukt houden</td><td>Val bouwen · voorwerpen gebruiken</td></tr>
           <tr><td><kbd>F</kbd></td><td>Spullen kapotmeppen · BB-geweer schieten</td></tr>
           <tr><td><kbd>Q</kbd></td><td>De beroemde aftershave-gil (bandieten schrikken)</td></tr>
-          <tr><td><kbd>Enter</kbd></td><td>Voorbereiding overslaan: laat ze maar komen</td></tr>
+          <tr><td><kbd>Enter</kbd></td><td>Intro overslaan · voorbereiding overslaan</td></tr>
           <tr><td><kbd>P</kbd> / <kbd>Esc</kbd> · <kbd>M</kbd></td><td>Pauze · geluid aan/uit</td></tr>
         </table>
         <h3>Tips</h3>
         <ul>
-          <li>Zoek het <b>BB-geweer</b> van Buzz op zijn kamer (boven, helemaal rechts).</li>
+          <li>Zoek het <b>BB-geweer</b> van Buzz op zijn kamer (boven, rechts).</li>
           <li>Zet in de woonkamer de <b>tv</b> aan: de gangsterfilm jaagt de bandieten de stuipen op het lijf.</li>
           <li>Boven aan de grote trap staat een <b>slee</b>: glij naar beneden en de voordeur uit!</li>
-          <li>Verzamel <b>16.000 noppen</b> voor de status <b>Echte Kevin</b>.</li>
-          <li>De minikaart linksonder toont waar Harry en Marv zijn.</li>
+          <li>Verzamel <b>20.000 noppen</b> voor de status <b>Echte Kevin</b>. Blauwe noppen liggen op hoge plekken.</li>
         </ul>
         <div class="buttons"><button class="brick blue" data-back>Terug</button></div>
       </div>
@@ -84,7 +112,7 @@
         <p class="small">De originele muziek van John Williams wordt gestreamd via de officiële YouTube-speler
           (rechtsonder). Lukt dat niet – bijvoorbeeld offline of vanaf een <code>file://</code>-pad – dan speelt
           automatisch de ingebouwde muziek. Je kunt hieronder ook je eigen YouTube-links plakken.</p>
-        <label class="field">Menu &amp; einde<input id="yt-menu" type="text" spellcheck="false"></label>
+        <label class="field">Menu, intro &amp; einde<input id="yt-menu" type="text" spellcheck="false"></label>
         <label class="field">Voorbereiding (19:30–21:00)<input id="yt-prep" type="text" spellcheck="false"></label>
         <label class="field">Aanval van de bandieten<input id="yt-attack" type="text" spellcheck="false"></label>
         <div class="buttons">
@@ -121,9 +149,7 @@
 
     <!-- Touch-bediening -->
     <div id="touch" class="hidden">
-      <div class="pad left">
-        <button data-k="left">◀</button><button data-k="up">▲</button><button data-k="down">▼</button><button data-k="right">▶</button>
-      </div>
+      <div id="stick"><i></i></div>
       <div class="pad right">
         <button data-k="scream">Q</button><button data-k="act">F</button><button data-k="build">E</button><button data-k="jump">⤒</button>
       </div>
@@ -139,9 +165,7 @@
     <div id="ytPlayer"></div>
   </div>
 
-  <script src="js/draw.js"></script>
   <script src="js/audio.js"></script>
-  <script src="js/intro.js"></script>
-  <script src="js/game.js"></script>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>
